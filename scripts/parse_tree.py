@@ -1,8 +1,5 @@
-
 import re
 import sys
-import model
-import quants
 
 # a Tree consists of a category label 'c' and a list of child Trees 'ch'
 class Tree:
