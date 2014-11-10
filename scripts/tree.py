@@ -1,5 +1,6 @@
 class Tree(object):
-  def __init__(self, ch=None):
+  def __init__(self, p=None, ch=None):
+    self.parent = p
     self.children = ch
     if ch:
       self.valence = len(ch)
@@ -11,7 +12,7 @@ class Tree(object):
 
   def sprout(self, numkids):
     #grow [numkids] child tuple nodes
-    self.children = (Tree(),)*numkids
+    self.children = (Tree(p=self),)*numkids
     self.valence = numkids
 
   def getDepth(self):
