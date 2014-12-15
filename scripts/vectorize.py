@@ -3,9 +3,15 @@
 # PRE: treeA/treeB - binarized trees with vectors representing each node
 # POST: a vector representation of the similarity of each node to each other node
 
+#If run using CLI:
+#python vectorize.py TREEFILE OUTFILE
+# reads in TREEFILE, which contains an X-by-2 numpy array (or list) of treeA,treeB pairs for each training pair
+# outputs a numpy array with a similarity vector on each row for each training example
+
 from egraphTree import *
-from scipy import linalg, dot
 import numpy as np
+import cPickle as pickle
+from scipy import linalg, dot
 
 ######
 # Helper junk for dev
@@ -85,3 +91,19 @@ def getSim(treeA,treeB):
       #  add a null vector with the right length
       simvec += fillout([0], length)
   return( np.array(simvec) )
+
+def buildSimMatrix(fileHandle):
+  with open(fileHandle,'rb') as f:
+    treefile = pickle.load(f)
+  matrix = []
+  for row in treefile:
+    if matrix == []:
+      matrix = getSim(row[0],row[1])
+    else:
+      np.concatenate( (matrix, getSim(row[0],row[1])), axis= 0)
+  return( matrix )
+
+if __name__ == '__main__':
+  output = buildSimMatrix(sys.argv[1])
+  with open(sys.argv[2],'rb') as f:
+    pickle.dump(output,f)
