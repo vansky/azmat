@@ -1,3 +1,8 @@
+# An API to get a similarity score between two trees
+# Usage: getSim(treeA,treeB)
+# PRE: treeA/treeB - binarized trees with vectors representing each node
+# POST: a vector representation of the similarity of each node to each other node
+
 from egraphTree import *
 from scipy import linalg, dot
 import numpy as np
