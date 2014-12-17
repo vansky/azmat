@@ -12,6 +12,7 @@ from egraphTree import *
 import numpy as np
 import cPickle as pickle
 from scipy import linalg, dot
+import sys
 
 ######
 # Helper junk for dev
@@ -105,5 +106,5 @@ def buildSimMatrix(fileHandle):
 
 if __name__ == '__main__':
   output = buildSimMatrix(sys.argv[1])
-  with open(sys.argv[2],'rb') as f:
+  with open(sys.argv[2],'wb') as f:
     pickle.dump(output,f)
