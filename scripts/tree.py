@@ -1,4 +1,4 @@
-
+import numpy
 import re
 import sys
 
@@ -187,7 +187,36 @@ class Tree:
             return self.ch[0].treeAt(idx)
         if idx >= self.ch[1].l:
             return self.ch[1].treeAt(idx)
+
         
+    def annotateVectors(self,model,lower=True):
+      for child in self.ch:
+        #if there are children, annotate them first
+        child.annotateVectors(model)
+      if self.ch == []:
+        #if at a leaf, use the model
+        if ' ' in self.c:
+          #if node ID is part of cat, just use the word portion
+          mycat = self.c.split()[0]
+        else:
+          mycat = self.c
+        if lower:
+          self.vector = numpy.array(model[mycat.lower()])
+        else:
+          self.vector = numpy.array(model[mycat])
+      else:
+        #otherwise, use the head's vector
+        self.vector = self.findHead().vector
+
+    def findHead(self):
+      head = None
+      for child in self.ch:
+        if self.c[0] == child.c[0]:
+          head = child
+      if head == None: #problem! just use the last child
+        head = self.ch[-1]
+      return( head )
+          
     def toLatex(self, spaces=1, leafColor=None, refColor=None, guoColor=None, lColor=None):
         color = ("\\" + leafColor) if leafColor else ""
         rColor = ("\\" + refColor) if refColor else ""
