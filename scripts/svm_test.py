@@ -25,14 +25,14 @@ if 'output' not in OPTS:
 testlist = [label for label in OPTS if label not in ['model','output']]
 testlist = sorted(testlist) #arrange systems alphabetically according to cli identifier
 
-with open(OPTS['model'],'wb') as f:
+with open(OPTS['model'],'rb') as f:
   model = pickle.load(f)
 
 Xlist = []
 
-for testfile in testlist:
+for fileid in testlist:
   #for each composition system, grab the similarity cross-product vector
-  with open(testfile,'rb') as f:
+  with open(OPTS[fileid],'rb') as f:
     newfile = pickle.load(f)
     if Xlist == []:
       #if we haven't seen trained output yet, save it
@@ -42,7 +42,7 @@ for testfile in testlist:
       Xlist = numpy.concatenate( (Xlist,newfile), axis=1)
 
 #train the SVM regressor based on our training data
-predictions = model.predict(X)
+predictions = model.predict(Xlist)
 
 with open(OPTS['output'],'wb') as f:
   pickle.dump(predictions,f)
