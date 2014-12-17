@@ -16,8 +16,6 @@ for aix in range(1,len(sys.argv)):
   elif aix < len(sys.argv) - 1 and len(sys.argv[aix+1]) > 2 and sys.argv[aix+1][:2] == '--':
     #missing filename, so simple arg
     OPTS[sys.argv[aix][2:]] = True
-#  elif sys.argv[aix][2:] == 'input':
-#    inputlist.append(sys.argv[aix+1])
   else:
     OPTS[sys.argv[aix][2:]] = sys.argv[aix+1]
 
@@ -34,9 +32,9 @@ with open(OPTS['ans'],'rb') as f:
   ylist = pickle.load(f)
   ylist = numpy.ravel(ylist) #put ylist in a flattened format
 
-for infile in inputlist:
+for fileid in inputlist:
   #for each composition system, grab the similarity cross-product vector
-  with open(infile,'rb') as f:
+  with open(OPTS[fileid],'rb') as f:
     newfile = pickle.load(f)
     if Xlist == []:
       #if we haven't seen trained output yet, save it
@@ -49,7 +47,7 @@ for infile in inputlist:
 
 #train the SVM regressor based on our training data
 model = svm.SVR(kernel='linear')
-model.fit(X, y)
+model.fit(Xlist, ylist)
 
 with open(OPTS['output'],'wb') as f:
   pickle.dump(model,f)

@@ -99,9 +99,9 @@ def buildSimMatrix(fileHandle):
   matrix = []
   for row in treefile:
     if matrix == []:
-      matrix = getSim(row[0],row[1])
+      matrix = getSim(row[0],row[1]).reshape(1,-1)
     else:
-      np.concatenate( (matrix, getSim(row[0],row[1])), axis= 0)
+      matrix = np.concatenate( (matrix, getSim(row[0],row[1]).reshape(1,-1) ), axis= 0)
   return( matrix )
 
 if __name__ == '__main__':
