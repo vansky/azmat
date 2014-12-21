@@ -44,9 +44,10 @@ def getNodes(treeA):
 
 def similarity(a,b):
   #return the cosine similarity of two 1-D arrays
-  a = np.array(a)
-  b = np.array(b)
-  return (dot(a,b)/linalg.norm(a)/linalg.norm(b) )
+  a = np.array(a).astype(np.float64, copy=False).ravel()
+  b = np.array(b).astype(np.float64, copy=False).ravel()
+  output = dot(a,b)/linalg.norm(a)/linalg.norm(b)
+  return (output)
 
 def fillout(vec,length):
   #fill out a vector to given length
@@ -74,7 +75,9 @@ def getSim(treeA,treeB):
       #key the similarity score by the depth pair
       if (nodea[1],nodeb[1]) not in simdict:
         simdict[(nodea[1],nodeb[1])] = []
+
       simdict[(nodea[1],nodeb[1])].append( similarity(nodea[0],nodeb[0]) )
+
   #unify microdiffs so 0x0 is always the same length
   for key in simdict:
     length = 50.0/(2**key[0]) * 50.0/(2**key[1])
@@ -102,9 +105,9 @@ def buildSimMatrix(fileHandle):
     treefile = pickle.load(f)
   matrix = []
   for row in treefile:
-    if len(row) < 2:
+    if len(row) < 2 or np.array(row[0]).size == 0 or np.array(row[1]).size == 0:
       row = np.array([tree.Tree(),tree.Tree()])
-    if type(row) == type([]):
+    elif type(row) == type([]):
       row = np.array(row)
     if matrix == []:
       matrix = getSim(row[0],row[1]).reshape(1,-1)

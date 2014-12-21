@@ -1,4 +1,5 @@
-# python egraphTree.py train.sents output.pkl
+# python trainglove.py train.sents output.pkl
+import numpy as np
 import cPickle as pickle
 import egraphTree as eT
 import sys
@@ -14,19 +15,13 @@ for line in modellist:
   model[sline[0]] = sline[1:]
   
 #load data for treeing
-with open(sys.argv[1],'r') as f:
-  trainsents = f.readlines()
+with open(sys.argv[1],'rb') as f:
+  traintrees = pickle.load(f)
 
-#build a list of paired training trees
-traintrees = []
-for pair in trainsents:
-  treepair = []
-  for pairelem in pair.strip().split('\t'):
-    nodes = eT.compose(pairelem)
-    mtree = eT.nodes2Tree(nodes)
-    mtree.annotateVectors(model)
-    treepair.append(mtree)
-  traintrees.append(treepair)
+#use a list of paired training trees
+for pair in traintrees:
+  for tree in pair:
+    tree.annotateVectors(model)
 
 #write the trained output trees
 with open(sys.argv[2],'wb') as f:
