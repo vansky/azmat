@@ -30,12 +30,13 @@ ylist = None
 with open(OPTS['ans'],'rb') as f:
   #snag the training answers
   ylist = pickle.load(f)
-  ylist = numpy.ravel(ylist) #put ylist in a flattened format
-
+  #ylist = numpy.ravel(ylist) #put ylist in a flattened format
+  
 for fileid in inputlist:
   #for each composition system, grab the similarity cross-product vector
+  print "Incorporating info from %s" % (fileid)
   with open(OPTS[fileid],'rb') as f:
-    newfile = pickle.load(f)
+    newfile = pickle.load(f).astype('float64')
     if Xlist == []:
       #if we haven't seen trained output yet, save it
       Xlist = newfile
@@ -43,7 +44,29 @@ for fileid in inputlist:
       #concatenate each system's training output to the others
       Xlist = numpy.concatenate( (Xlist,newfile), axis=1)
 
+#cnt = 0
+#for y in ylist:
+  #print type(y), y
+#  if y == -1:
+    #print 'BOOM'
+#    cnt += 1
+print 'X',Xlist.shape
+#print 'y[0]',ylist[0]
+#print 'ycnt', cnt
+print 'y',ylist.shape
+
+#remove bad training examples
+#keep = numpy.all(numpy.concatenate((ylist != -1, keep),axis=1), axis=1)
+Xlist = Xlist[ylist != -1]
+ylist = ylist[ylist != -1]
+Xlist = numpy.nan_to_num(Xlist)
+#keep = numpy.all(numpy.isfinite(Xlist), axis=1)
+#Xlist = Xlist[keep]
+#ylist = ylist[keep]
 #myobs_scaled = sklearn.preprocessing.scale(myobs_a) #less memory efficient, but centers and scales all features/columns
+
+print 'X',Xlist.shape
+print 'y',ylist.shape
 
 #train the SVM regressor based on our training data
 model = svm.SVR(kernel='linear')

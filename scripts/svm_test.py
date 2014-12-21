@@ -27,13 +27,14 @@ testlist = sorted(testlist) #arrange systems alphabetically according to cli ide
 
 with open(OPTS['model'],'rb') as f:
   model = pickle.load(f)
-
+  
 Xlist = []
 
 for fileid in testlist:
   #for each composition system, grab the similarity cross-product vector
+  print "Incorporating info from %s" % (fileid)
   with open(OPTS[fileid],'rb') as f:
-    newfile = pickle.load(f)
+    newfile = pickle.load(f).astype('float64')
     if Xlist == []:
       #if we haven't seen trained output yet, save it
       Xlist = newfile
@@ -41,7 +42,8 @@ for fileid in testlist:
       #concatenate each system's training output to the others
       Xlist = numpy.concatenate( (Xlist,newfile), axis=1)
 
-#train the SVM regressor based on our training data
+Xlist = numpy.nan_to_num(Xlist)
+#test the SVM regressor based on our test data
 predictions = model.predict(Xlist)
 
 with open(OPTS['output'],'wb') as f:

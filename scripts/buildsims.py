@@ -10,7 +10,7 @@ with open(sys.argv[1],'r') as f:
 
 simpick = []
 for line in sims:
-  simpick.append(line.strip())
+  simpick.append(float(line.strip()))
 
 simpick = numpy.array(simpick)
 with open(sys.argv[2],'wb') as f:

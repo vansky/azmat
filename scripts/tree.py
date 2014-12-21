@@ -189,7 +189,7 @@ class Tree:
             return self.ch[1].treeAt(idx)
 
         
-    def annotateVectors(self,model,lower=True):
+    def annotateVectors(self,model,lower=True,numdims=300):
       for child in self.ch:
         #if there are children, annotate them first
         child.annotateVectors(model)
@@ -201,9 +201,9 @@ class Tree:
         else:
           mycat = self.c
         if lower:
-          self.vector = numpy.array(model[mycat.lower()])
+          self.vector = numpy.array(model.get(mycat.lower(),numpy.random.uniform(size=(numdims,1))))
         else:
-          self.vector = numpy.array(model[mycat])
+          self.vector = numpy.array(model.get(mycat,numpy.random.uniform(size=(numdims,1))))
       else:
         #otherwise, use the head's vector
         self.vector = self.findHead().vector

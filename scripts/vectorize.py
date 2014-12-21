@@ -59,9 +59,13 @@ def fillout(vec,length):
 
 def getSim(treeA,treeB):
   #Get the similarity vector for treeA and treeB
-  nodelistA = getNodes(treeA)
-  nodelistB = getNodes(treeB)
-  
+  if treeA.c == '' or treeB.c == '':
+    nodelistA = []
+    nodelistB = []
+  else:
+    nodelistA = getNodes(treeA)
+    nodelistB = getNodes(treeB)
+
   simdict = {}
   simvec = []
   #find the cross product similarity scores
@@ -98,13 +102,19 @@ def buildSimMatrix(fileHandle):
     treefile = pickle.load(f)
   matrix = []
   for row in treefile:
+    if len(row) < 2:
+      row = np.array([tree.Tree(),tree.Tree()])
+    if type(row) == type([]):
+      row = np.array(row)
     if matrix == []:
       matrix = getSim(row[0],row[1]).reshape(1,-1)
     else:
       matrix = np.concatenate( (matrix, getSim(row[0],row[1]).reshape(1,-1) ), axis= 0)
+    #print matrix.shape
   return( matrix )
 
 if __name__ == '__main__':
   output = buildSimMatrix(sys.argv[1])
+  print output.shape
   with open(sys.argv[2],'wb') as f:
     pickle.dump(output,f)
