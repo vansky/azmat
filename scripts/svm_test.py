@@ -27,7 +27,7 @@ testlist = sorted(testlist) #arrange systems alphabetically according to cli ide
 
 with open(OPTS['model'],'rb') as f:
   model = pickle.load(f)
-  
+
 Xlist = []
 
 for fileid in testlist:
@@ -35,6 +35,7 @@ for fileid in testlist:
   print "Incorporating info from %s" % (fileid)
   with open(OPTS[fileid],'rb') as f:
     newfile = pickle.load(f).astype('float64')
+    print newfile.shape
     if Xlist == []:
       #if we haven't seen trained output yet, save it
       Xlist = newfile

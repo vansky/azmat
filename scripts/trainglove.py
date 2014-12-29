@@ -18,6 +18,9 @@ for line in modellist:
 with open(sys.argv[1],'rb') as f:
   traintrees = pickle.load(f)
 
+print len(traintrees)
+print traintrees.shape
+  
 #use a list of paired training trees
 for pair in traintrees:
   for tree in pair:

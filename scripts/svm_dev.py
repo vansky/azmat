@@ -1,5 +1,6 @@
-#python svm_train.py {--ID VEC_FILE.pkl ...} --ans TRAIN_ANSWERS --output FILE
+#python svm_train.py {--ID VEC_FILE.pkl ...} --ans TRAIN_ANSWERS --dev DEVNUM --output FILE
 # trains an SVM to assign regression weights to tree-wise similarity vectors
+# trains/tests on the splits denoted by DEVNUM {1-8}
 # TRAIN_ANSWERS needs to be an X-by-1 numpy array of similarity training answers
 # model is output to the FILE specified by --output
 
@@ -19,13 +20,8 @@ for aix in range(1,len(sys.argv)):
   else:
     OPTS[sys.argv[aix][2:]] = sys.argv[aix+1]
     
-if 'output' not in OPTS:
+if 'output' not in OPTS or 'dev' not in OPTS:
   raise #need someplace to dump the model or this is a waste of time
-
-if 'dev' in OPTS:
-  DEV = True
-else:
-  DEV = False
   
 inputlist = [label for label in OPTS if label not in ['ans','output','dev']]
 inputlist = sorted(inputlist) #arrange systems alphabetically according to cli identifier
@@ -56,18 +52,19 @@ print 'y',ylist.shape
 Xlist = Xlist[ylist != -1]
 ylist = ylist[ylist != -1]
 Xlist = numpy.nan_to_num(Xlist)
-if DEV:
-  Xlist = Xlist[:-1000]
-  ylist = ylist[:-1000]
-
+devnum = int(OPTS['dev'])
+devX = numpy.concatenate((Xlist[:(devnum-1)*1000],Xlist[devnum*1000:]),axis=0)
+devY = numpy.concatenate((ylist[:(devnum-1)*1000],ylist[devnum*1000:]),axis=0)
+testX = Xlist[(devnum-1)*1000:devnum*1000]
 #myobs_scaled = sklearn.preprocessing.scale(myobs_a) #less memory efficient, but centers and scales all features/columns
 
-print 'X',Xlist.shape
-print 'y',ylist.shape
+print 'X',devX.shape
+print 'y',devY.shape
 
 #train the SVM regressor based on our training data
 model = svm.SVR(kernel='linear')
-model.fit(Xlist, ylist)
-
-with open(OPTS['output'],'wb') as f:
-  pickle.dump(model,f)
+model.fit(devX, devY)
+predictions = model.predict(testX)
+predictions = predictions.astype('string',copy=False)
+with open(OPTS['output']+OPTS['dev'],'w') as f:
+  f.write('\n'.join(predictions))
