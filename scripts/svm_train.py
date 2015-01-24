@@ -1,4 +1,4 @@
-#python svm_train.py {--ID VEC_FILE.pkl ...} --ans TRAIN_ANSWERS --output FILE
+#python svm_train_coefs.py {--ID VEC_FILE.pkl ...} --ans TRAIN_ANSWERS --output FILE
 # trains an SVM to assign regression weights to tree-wise similarity vectors
 # TRAIN_ANSWERS needs to be an X-by-1 numpy array of similarity training answers
 # model is output to the FILE specified by --output
@@ -26,8 +26,44 @@ if 'dev' in OPTS:
   DEV = True
 else:
   DEV = False
+
+if 'leafonly' in OPTS:
+  LEAF = True
+  COMPOS = False
+  CROSS = False
+elif 'composeonly' in OPTS:
+  LEAF = False
+  COMPOS = True
+  CROSS = False
+elif 'crossonly' in OPTS:
+  LEAF = False
+  COMPOS = False
+  CROSS = True
+elif 'leafcompose' in OPTS:
+  LEAF = True
+  COMPOS = True
+  CROSS = False
+elif 'leafcross' in OPTS:
+  LEAF = True
+  COMPOS = False
+  CROSS = True
+elif 'composecross' in OPTS:
+  LEAF = False
+  COMPOS = True
+  CROSS = True
+else:
+  LEAF = True
+  COMPOS = True
+  CROSS = True
+
+if LEAF:
+  print 'leaf/leaf'
+if COMPOS:
+  print 'nonleaf/nonleaf'
+if CROSS:
+  print 'leaf/nonleaf'
   
-inputlist = [label for label in OPTS if label not in ['ans','output','dev']]
+inputlist = [label for label in OPTS if label not in ['ans','output','dev','leafonly','crossonly','composeonly','leafcompose','leafcross','composecross']]
 inputlist = sorted(inputlist) #arrange systems alphabetically according to cli identifier
 
 Xlist = []
@@ -36,12 +72,52 @@ with open(OPTS['ans'],'rb') as f:
   #snag the training answers
   ylist = pickle.load(f)
   #ylist = numpy.ravel(ylist) #put ylist in a flattened format
+
+print 'Generating Mask'
+keylist = sorted([(x,y) for x in range(50) for y in range(50)])
+totallength = 0
+for key in keylist:
+  totallength += int(50.0/(2**key[0]) * 50.0/(2**key[1]))
+modelmask = numpy.ones((1,totallength),dtype=bool)
+
+index = 0
+if not (LEAF and CROSS and COMPOS):
+  for key in keylist:
+    subvectorlength = int(50.0/(2**key[0]) * 50.0/(2**key[1]))
+    if key == (0,0):
+      #leaf/leaf comparison
+      if not LEAF:
+        #wipe all weights associated with leaf/leaf similarity
+        for weightix in range(index,index+subvectorlength):
+          modelmask[0,weightix] = False
+    elif 0 in key:
+      #leaf/nonleaf comparison
+      if not CROSS:
+        #wipe all weights associated with leaf/nonleaf similarity
+        for weightix in range(index,index+subvectorlength):
+          modelmask[0,weightix] = False
+    else:
+      #nonleaf/nonleaf similarity
+      if not COMPOS:
+        #wipe all weights associated with leaf/nonleaf similarity
+        for weightix in range(index,index+subvectorlength):
+          modelmask[0,weightix] = False
+    #when done wiping or skipping, move to the next subvector
+    index += subvectorlength
+
+modelmask = modelmask.ravel()
+print modelmask.shape
+print 'Mask Generated'
   
 for fileid in inputlist:
   #for each composition system, grab the similarity cross-product vector
   print "Incorporating info from %s" % (fileid)
   with open(OPTS[fileid],'rb') as f:
     newfile = pickle.load(f).astype('float64')
+    print newfile.shape
+    if 'surf' not in fileid:
+      newfile = newfile[:,modelmask]
+    print 'masked:', newfile.shape
     if Xlist == []:
       #if we haven't seen trained output yet, save it
       Xlist = newfile
