@@ -1,0 +1,15 @@
+TREEFILE := [ [tree1a,tree1b], [tree2a,tree2b], ...]
+python vectorize.py TREEFILE MATFILE
+python svm_train.py {--ID MATFILE ...} --ans TRAIN_ANSWERS --output MFILE
+python svm_train.py --urae train_matrices/urae_training_matrices.pkl --surf train_matrices/surface_features.pkl --glove train_matrices/glove_training_matrices.pkl --train_matrices/assma_training_matrix.pkl --ans ans.pkl --output model_files/model.pkl
+
+python svm_test.py --model MFILE {--ID MATFILE ... } --output PFILE
+time python svm_test.py --urae train_matrices/urae_training_matrices.pkl --surf train_matrices/surface_features.pkl --glove train_matrices/glove_training_matrices.pkl --assma train_matrices/assma_training_matrix.pkl --model model_files/model.pkl --output testoutcome.pkl
+
+python pullsim.py PFILE > PFILE.txt
+python pullsim.py testoutcome.pkl > testoutcome.txt
+
+perl /home/corpora/original/english/semeval15-similarity/trial/correlation-noconfidence.pl /home/mulproj/jin/SemEval/training-gs.txt.w testoutcome.txt
+
+DEV testing:
+time python svm_dev.py --urae train_matrices/urae_training_matrices.pkl --surf train_matrices/surface_features.pkl --glove train_matrices/glove_training_matrices.pkl --assma train_matrices/assma_training_matrix.pkl --ans ans.pkl --dev 1 --output devresults/SUGA.dev
