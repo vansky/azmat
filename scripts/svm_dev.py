@@ -53,9 +53,16 @@ Xlist = Xlist[ylist != -1]
 ylist = ylist[ylist != -1]
 Xlist = numpy.nan_to_num(Xlist)
 devnum = int(OPTS['dev'])
-devX = numpy.concatenate((Xlist[:(devnum-1)*1000],Xlist[devnum*1000:]),axis=0)
-devY = numpy.concatenate((ylist[:(devnum-1)*1000],ylist[devnum*1000:]),axis=0)
-testX = Xlist[(devnum-1)*1000:devnum*1000]
+if 'mod' in OPTS:
+  #this will ensure that no single domain is left out, but it won't be trivial to eval against the gold standard anymore.
+  devX = numpy.delete(Xlist,range(devnum-1,Xlist.shape[0],8),axis=0)
+  devY = numpy.delete(ylist,range(devnum-1,ylist.shape[0],8),axis=0)
+  testX = Xlist[devnum-1::8]
+else:
+  #tests on relatively unseen domains
+  devX = numpy.concatenate((Xlist[:(devnum-1)*1000],Xlist[devnum*1000:]),axis=0)
+  devY = numpy.concatenate((ylist[:(devnum-1)*1000],ylist[devnum*1000:]),axis=0)
+  testX = Xlist[(devnum-1)*1000:devnum*1000]
 #myobs_scaled = sklearn.preprocessing.scale(myobs_a) #less memory efficient, but centers and scales all features/columns
 
 print 'X',devX.shape
@@ -67,4 +74,4 @@ model.fit(devX, devY)
 predictions = model.predict(testX)
 predictions = predictions.astype('string',copy=False)
 with open(OPTS['output']+OPTS['dev'],'w') as f:
-  f.write('\n'.join(predictions))
+  f.write('\n'.join(predictions) + '\n')

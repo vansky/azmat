@@ -56,7 +56,7 @@ def fillout(vec,length):
   for l in range(int(length)):
     #repeatedly iterate over vec until desired length
     output.append(vec[l % maxlen])
-  return( sorted(output) )
+  return( sorted(output, reverse=True) )
 
 def getSim(treeA,treeB):
   #Get the similarity vector for treeA and treeB
@@ -81,7 +81,7 @@ def getSim(treeA,treeB):
   #unify microdiffs so 0x0 is always the same length
   for key in simdict:
     length = 50.0/(2**key[0]) * 50.0/(2**key[1])
-    simdict[key] = fillout(sorted(simdict[key]), length)
+    simdict[key] = fillout(sorted(simdict[key], reverse=True), length)
 
   #find all the keys that every sentence should have
   keylist = sorted([(x,y) for x in range(50) for y in range(50)])
@@ -93,7 +93,7 @@ def getSim(treeA,treeB):
     if key in simdict:
       #if we've seen that kind of depth pairing:
       #  add it to our vector after expanding it to the requisite length
-      simvec += fillout(sorted(simdict[key]), length)
+      simvec += fillout(sorted(simdict[key], reverse=True), length)
     else:
       #if we've not seen that kind of depth pairing:
       #  add a null vector with the right length
